@@ -1,0 +1,88 @@
+/* General Body Styling */
+body {
+    font-family: Arial, sans-serif;
+    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicm0lE8xVoiMnsCzxGXan2cwz5j0ecbLMa0BfUBH3mrQjJymclzPqOuB_T_c6sfeGVOvJ3fcV8nMGi2vWFa_We19mWdwbIQ_nbik0w05lXnoffFLTyvOR-EVb_PIFvRJe5dDZo9cSWTa0B/s900/Clouds+dusk+local-5.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    height: 100vh;
+    margin: 0;
+    color: #000000;
+}
+
+/* Container for Centering the Form */
+.container {
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    width: 300%;
+    height: 200%;
+}
+
+/* Login and Signup Box Styling */
+.signup-box, .login-box {
+    
+    padding: 80px;
+    border-radius: 10px;
+    box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+}
+
+/* Heading */
+h2 {
+    font-size: 30px;
+    margin-bottom: 20px;
+    color: #fafafa;
+}
+
+/* Styling for Input Fields */
+.textbox {
+    margin-bottom: 20px;
+}
+
+.textbox input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.textbox input:focus {
+    border-color: #fff200;
+    outline: none;
+}
+
+/* Button Styling */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #fff200;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #ff0606;
+}
+
+/* Styling for Signup/Login Link */
+p {
+    font-size: 14px;
+}
+
+p a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+p a:hover {
+    text-decoration: underline;
+}

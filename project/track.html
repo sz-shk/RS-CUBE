@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Prediction</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .city {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flood Prediction Around a City</h1>
+    <form id="floodForm">
+        <label for="city">City Name:</label>
+        <input type="text" id="city" placeholder="Enter city name" required>
+        <button type="submit">Predict Flood Risk</button>
+    </form>
+
+    <div id="map"></div>
+    <div class="results" id="results"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const ELEVATION_API_URL = "https://api.open-elevation.com/api/v1/lookup";
+        const WEATHER_API_KEY = "814888a61de4b880b167379590024635"; 
+        
+        // Set default radius in kilometers (e.g., 50 km)
+        const DEFAULT_RADIUS = 50; 
+
+        const map = L.map('map').setView([27.708317, 85.3205817], 13);  // Default to Kathmandu, Nepal
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        document.getElementById("floodForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const city = document.getElementById("city").value;
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "Loading...";
+
+            try {
+                // Step 1: Get latitude and longitude of the city
+                const geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${city}&format=json&limit=1`;
+                const geocodeResponse = await fetch(geocodeUrl);
+                const geocodeData = await geocodeResponse.json();
+
+                if (geocodeData.length === 0) {
+                    resultsDiv.innerHTML = `City '${city}' not found.`;
+                    return;
+                }
+
+                const { lat, lon } = geocodeData[0];
+
+                // Step 2: Set map view to the target city
+                map.setView([lat, lon], 13);
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`<b>${city}</b><br>Latitude: ${lat}<br>Longitude: ${lon}`)
+                    .openPopup();
+
+                // Step 3: Get elevation data
+                const elevationResponse = await fetch(`${ELEVATION_API_URL}?locations=${lat},${lon}`);
+                const elevationData = await elevationResponse.json();
+                const cityElevation = elevationData.results[0].elevation;
+
+                // Step 4: Fetch weather data (rainfall)
+                const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`;
+                const weatherResponse = await fetch(weatherUrl);
+                const weatherData = await weatherResponse.json();
+
+                const description = weatherData.weather[0].description;
+
+                // Step 5: Predict flood risk and calculate percentage
+                let floodRisk = "Low";
+                let floodRiskPercentage = 0;
+
+                if (cityElevation < 50) {
+                    floodRisk = "High";
+                    floodRiskPercentage = 80; // High flood risk: 80%
+                } else if (cityElevation < 100) {
+                    floodRisk = "Moderate";
+                    floodRiskPercentage = 50; // Moderate flood risk: 50%
+                } else {
+                    floodRisk = "Low";
+                    floodRiskPercentage = 20; // Low flood risk: 20%
+                }
+
+                // Step 6: Display Results
+                resultsDiv.innerHTML = ` 
+                    <h2>Flood Prediction Results</h2>
+                    <div class="city">
+                        <h3>${city}</h3>
+                        <p><strong>Elevation:</strong> ${cityElevation.toFixed(2)} meters</p>
+                        <p><strong>Weather:</strong> ${description}</p>
+                        <p><strong>Flood Risk:</strong> <span style="color: ${floodRisk === "High" ? "red" : floodRisk === "Moderate" ? "orange" : "green"}">${floodRisk}</span></p>
+                        <p><strong>Flood Risk Percentage:</strong> ${floodRiskPercentage}%</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `An error occurred: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
